@@ -1,1 +1,1 @@
-from .main import root
+import otterchat_app.main
