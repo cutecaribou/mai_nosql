@@ -1,8 +1,9 @@
 from fastapi import Depends, FastAPI
 
-from .dependencies import get_query_token, get_token_header
+# from .dependencies import get_query_token, get_token_header
 # from .internal import admin
-from .routers import messages, users
+from routers import messages, users
+import uvicorn
 
 # app = FastAPI(dependencies=[Depends(get_query_token)])
 app = FastAPI()
@@ -21,3 +22,6 @@ app.include_router(messages.router)
 @app.get("/")
 async def root():
     return {"message": "Hello Bigger Applications!"}
+
+if __name__ == '__main__':
+    uvicorn.run('main:app', port=8000, host='0.0.0.0', reload=True)
