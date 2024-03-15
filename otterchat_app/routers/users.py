@@ -1,4 +1,4 @@
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi     import APIRouter
 from mongos.user import UserStorage
 from models.user import UserModel
@@ -37,6 +37,13 @@ async def create_user(username: str, user: UserModel):
             content={'message': str(e)},
             status_code=400
         )
+
+@router.delete("/{username}", tags=["users"])
+async def del_user(username: str):
+    await user_storage.delete_user(username)
+    return Response(
+        status_code=200
+    )
 
 
 @router.get("/me", tags=["users"])

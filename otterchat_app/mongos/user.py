@@ -52,3 +52,11 @@ class UserStorage:
         except Exception as e:
             print(e)
             raise e
+
+    async def delete_user(self, username: str):
+        client = AsyncIOMotorClient(self._url_, server_api=ServerApi('1'))
+
+        db = client.otter_database
+        collection = db.user_collection
+
+        collection.delete_many({'username': username})
