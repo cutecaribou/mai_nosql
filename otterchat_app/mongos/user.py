@@ -60,3 +60,15 @@ class UserStorage:
         collection = db.user_collection
 
         collection.delete_many({'username': username})
+
+    async def get_user(self, username: str):
+        client = AsyncIOMotorClient(self._url_, server_api=ServerApi('1'))
+
+        db = client.otter_database
+        collection = db.user_collection
+
+        result = await collection.find_one({'username': username})
+        if result:
+            del result['_id']
+
+        return result

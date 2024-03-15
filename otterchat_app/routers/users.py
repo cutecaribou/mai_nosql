@@ -46,12 +46,20 @@ async def del_user(username: str):
         status_code=200
     )
 
+@router.get("/{username}", tags=["users"])
+async def read_user(username: str):
+    result = await user_storage.get_user(username)
+    if result:
+        return JSONResponse(
+            content=result,
+            status_code=200
+        )
+    else:
+        return Response(
+            status_code=404
+        )
+
 
 @router.get("/me", tags=["users"])
 async def read_user_me():
     return {"username": "fakecurrentuser"}
-
-
-@router.get("/{username}", tags=["users"])
-async def read_user(username: str):
-    return {"username": username}
