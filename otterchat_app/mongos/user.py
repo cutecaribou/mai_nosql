@@ -11,7 +11,18 @@ class UserStorage:
         self._url_ = connection_url
 
     async def get_all_users(self):
-        return {'hmmm': 'olololo'}
+        client = AsyncIOMotorClient(self._url_, server_api=ServerApi('1'))
+
+        db = client.otter_database
+        collection = db.user_collection
+
+        cursor = collection.find().sort('username')
+        results = []
+        for document in await cursor.to_list(length=100):
+            del document['_id']
+            print(document)
+            results.append(document)
+        return results
 
     async def create_new_user(self, username: str, user_data: UserModel):
         client = AsyncIOMotorClient(self._url_, server_api=ServerApi('1'))
