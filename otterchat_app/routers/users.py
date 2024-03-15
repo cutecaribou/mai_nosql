@@ -1,6 +1,9 @@
+from fastapi.responses import JSONResponse
 from fastapi     import APIRouter
 from mongos.user import UserStorage
 from models.user import UserModel
+
+from mongos.user import UserAlreadyExistsException
 
 router = APIRouter(
     prefix="/user",
@@ -20,13 +23,20 @@ async def read_users():
 async def create_user(username: str, user: UserModel):
     # return [{"username": "Rick"}, {"username": "Morty"}]
     # return await user_storage.get_all_users()
-    inserted = await user_storage.create_new_user(
-        username,
-        user
-    )
-    return {
-        'result': str(inserted)
-    }
+    try:
+        inserted = await user_storage.create_new_user(
+            username,
+            user
+        )
+        return JSONResponse(
+            content={'message': 'Created new user'},
+            status_code=201
+        )
+    except UserAlreadyExistsException as e:
+        return JSONResponse(
+            content={'message': str(e)},
+            status_code=400
+        )
 
 
 @router.get("/me", tags=["users"])

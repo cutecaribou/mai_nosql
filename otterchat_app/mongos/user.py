@@ -3,6 +3,9 @@ from pymongo.server_api  import ServerApi
 
 from models.user import UserModel
 
+class UserAlreadyExistsException(Exception):
+    pass
+
 class UserStorage:
     def __init__(self, connection_url: str):
         self._url_ = connection_url
@@ -18,29 +21,23 @@ class UserStorage:
 
             db = client.otter_database
             collection = db.user_collection
-            document = {
-                "username": username,
-            }
 
-            document.update(user_data)
-            # result = await db.test_collection.insert_one(document)
-            result = await collection.insert_one(document)
+            old_document = await collection.find_one({'username': username})
+            print(old_document)
 
-            # print(result)
-            #
-            # document = await collection.find_one({"Olenya": "wuv!"})
-            # print(document)
+            if not old_document:
+                new_document = {
+                    "username": username,
+                }
 
-            # print('----')
+                new_document.update(user_data)
 
-            # cursor = collection.find({"Olenya": "wuv!"}).sort('Olenya')
-            # for document in await cursor.to_list(length=100):
-            #     print(document)
+                result = await collection.insert_one(new_document)
 
-            # print("Pinged your deployment. You successfully connected to MongoDB!")
-
-            print(result)
-            return str(result)
+                print(result)
+                return str(result)
+            else:
+                raise UserAlreadyExistsException(f'User with username {username} already exists')
         except Exception as e:
             print(e)
             raise e
