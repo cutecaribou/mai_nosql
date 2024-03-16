@@ -17,14 +17,6 @@ router = APIRouter(
 
 user_storage = UserStorage('mongodb://localhost:27017')
 
-@router.get("/self", tags=["users"])
-async def read_user_self(username: Annotated[str | None, Cookie()] = None):
-    if username:
-        print('Current username:', username)
-        return await user_storage.get_user(username)
-    else:
-        return Response(status_code=401)
-
 @router.post("/login/{username}")
 def login(username: str):
     result = user_storage.get_user(username)
@@ -37,12 +29,12 @@ def login(username: str):
     # return {"message": "Come to the dark side, we have cookies"}
 
 @router.get("/", tags=["users"])
-async def read_users():
+async def read_all_users():
     # return [{"username": "Rick"}, {"username": "Morty"}]
     return await user_storage.get_all_users()
 
 @router.post("/{username}", tags=["users"])
-async def create_user(username: str, user: UserModel):
+async def create_new_user(username: str, user: UserModel):
     # return [{"username": "Rick"}, {"username": "Morty"}]
     # return await user_storage.get_all_users()
     if username in ['self', 'all', 'any']:
@@ -67,14 +59,22 @@ async def create_user(username: str, user: UserModel):
             )
 
 @router.delete("/{username}", tags=["users"])
-async def del_user(username: str):
+async def delete_a_user(username: str):
     await user_storage.delete_user(username)
     return Response(
         status_code=200
     )
 
+@router.get("/self", tags=["users"])
+async def read_info_about_currently_logged_user(username: Annotated[str | None, Cookie()] = None):
+    if username:
+        print('Current username:', username)
+        return await user_storage.get_user(username)
+    else:
+        return Response(status_code=401)
+
 @router.get("/{username}", tags=["users"])
-async def read_user(username: str):
+async def read_info_about_user(username: str):
     result = await user_storage.get_user(username)
     if result:
         return JSONResponse(
