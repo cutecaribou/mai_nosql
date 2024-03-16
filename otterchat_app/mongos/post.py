@@ -3,6 +3,8 @@ from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api  import ServerApi
 
+import pymongo
+
 from models.post import PostModel
 
 # class UserAlreadyExistsException(Exception):
@@ -17,7 +19,7 @@ class PostStorage:
         db = self._client_.otter_database
         collection = db.msg_collection
 
-        cursor = collection.find().sort('sent_at')
+        cursor = collection.find().sort('sent_at', pymongo.DESCENDING)
         results = []
         for document in await cursor.to_list(length=100):
             del document['_id']
@@ -36,7 +38,10 @@ class PostStorage:
         }
 
         result = await collection.insert_one(new_document)
-        return result
+        if result:
+            return 'ok'
+        else:
+            return 'error'
 
     # async def create_new_user(self, username: str, user_data: UserModel):
     #     # Send a ping to confirm a successful connection

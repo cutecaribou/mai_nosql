@@ -1,6 +1,12 @@
-from fastapi        import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.responses import Response
+from fastapi     import APIRouter, Depends, HTTPException
 from mongos.post import PostStorage
 from models.post import PostModel
+from models.post import IncomingPostModel
+from typing      import Annotated
+from fastapi     import Cookie
+
 
 # from ..dependencies import get_token_header
 
@@ -12,15 +18,20 @@ router = APIRouter(
 )
 
 
-msg_storage = PostStorage('mongodb://localhost:27017')
+post_storage = PostStorage('mongodb://localhost:27017')
 
 @router.get("/", tags=["posts"])
-async def read_messages():
-    return await msg_storage.get_all_posts()
+async def read_posts():
+    return await post_storage.get_all_posts()
 
-# async def read_users():
-#     # return [{"username": "Rick"}, {"username": "Morty"}]
-#     return await user_storage.get_all_users()
+@router.post("/", tags=["posts"])
+async def new_post(data: IncomingPostModel, username: Annotated[str | None, Cookie()] = None):
+    # return [{"username": "Rick"}, {"username": "Morty"}]
+    if username:
+        res = await post_storage.send_post(username, data.text)
+        return  {'status': res}
+    else:
+        return Response(status_code=401)
 #
 # @router.post("/{username}", tags=["users"])
 # async def create_message(username: str, user: MessageModel):

@@ -6,3 +6,6 @@ class PostModel(BaseModel):
     author : str
     text   : str
     sent_at: datetime
+
+class IncomingPostModel(BaseModel):
+    text   : str
