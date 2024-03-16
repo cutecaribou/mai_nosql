@@ -9,11 +9,10 @@ class UserAlreadyExistsException(Exception):
 class UserStorage:
     def __init__(self, connection_url: str):
         self._url_ = connection_url
+        self._client_ = AsyncIOMotorClient(self._url_, server_api=ServerApi('1'))
 
     async def get_all_users(self):
-        client = AsyncIOMotorClient(self._url_, server_api=ServerApi('1'))
-
-        db = client.otter_database
+        db = self._client_.otter_database
         collection = db.user_collection
 
         cursor = collection.find().sort('username')
@@ -25,12 +24,11 @@ class UserStorage:
         return results
 
     async def create_new_user(self, username: str, user_data: UserModel):
-        client = AsyncIOMotorClient(self._url_, server_api=ServerApi('1'))
         # Send a ping to confirm a successful connection
         try:
-            await client.admin.command('ping')
+            await self._client_.admin.command('ping')
 
-            db = client.otter_database
+            db = self._client_.otter_database
             collection = db.user_collection
 
             old_document = await collection.find_one({'username': username})
@@ -54,17 +52,13 @@ class UserStorage:
             raise e
 
     async def delete_user(self, username: str):
-        client = AsyncIOMotorClient(self._url_, server_api=ServerApi('1'))
-
-        db = client.otter_database
+        db = self._client_.otter_database
         collection = db.user_collection
 
         collection.delete_many({'username': username})
 
     async def get_user(self, username: str):
-        client = AsyncIOMotorClient(self._url_, server_api=ServerApi('1'))
-
-        db = client.otter_database
+        db = self._client_.otter_database
         collection = db.user_collection
 
         result = await collection.find_one({'username': username})

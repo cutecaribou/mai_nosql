@@ -1,8 +1,10 @@
 from fastapi.responses import JSONResponse
 from fastapi.responses import Response
 from fastapi     import APIRouter
+from fastapi     import Cookie
 from mongos.user import UserStorage
 from models.user import UserModel
+from typing      import Annotated
 
 from mongos.user import UserAlreadyExistsException
 
@@ -14,6 +16,25 @@ router = APIRouter(
 )
 
 user_storage = UserStorage('mongodb://localhost:27017')
+
+@router.get("/self", tags=["users"])
+async def read_user_self(username: Annotated[str | None, Cookie()] = None):
+    if username:
+        print('Current username:', username)
+        return await user_storage.get_user(username)
+    else:
+        return Response(status_code=401)
+
+@router.post("/login/{username}")
+def login(username: str):
+    result = user_storage.get_user(username)
+    if result:
+        resp = Response()
+        resp.set_cookie(key="username", value=username)
+        return resp
+    else:
+        return Response(status_code=404)
+    # return {"message": "Come to the dark side, we have cookies"}
 
 @router.get("/", tags=["users"])
 async def read_users():
@@ -58,8 +79,3 @@ async def read_user(username: str):
         return Response(
             status_code=404
         )
-
-
-@router.get("/me", tags=["users"])
-async def read_user_me():
-    return {"username": "fakecurrentuser"}
