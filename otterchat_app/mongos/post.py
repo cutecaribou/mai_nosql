@@ -27,6 +27,18 @@ class PostStorage:
             results.append(document)
         return results
 
+    async def get_posts_by_user(self, username: str):
+        db = self._client_.otter_database
+        collection = db.msg_collection
+
+        cursor = collection.find({'author': username}).sort('sent_at', pymongo.DESCENDING)
+        results = []
+        for document in await cursor.to_list(length=100):
+            del document['_id']
+            print(document)
+            results.append(document)
+        return results
+
     async def send_post(self, username: str, text: str):
         db = self._client_.otter_database
         collection = db.msg_collection

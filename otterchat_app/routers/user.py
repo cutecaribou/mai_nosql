@@ -45,20 +45,26 @@ async def read_users():
 async def create_user(username: str, user: UserModel):
     # return [{"username": "Rick"}, {"username": "Morty"}]
     # return await user_storage.get_all_users()
-    try:
-        inserted = await user_storage.create_new_user(
-            username,
-            user
-        )
+    if username in ['self', 'all', 'any']:
         return JSONResponse(
-            content={'message': 'Created new user'},
-            status_code=201
-        )
-    except UserAlreadyExistsException as e:
-        return JSONResponse(
-            content={'message': str(e)},
+            content={'message': 'Forbidden username'},
             status_code=400
         )
+    else:
+        try:
+            inserted = await user_storage.create_new_user(
+                username,
+                user
+            )
+            return JSONResponse(
+                content={'message': 'Created new user'},
+                status_code=201
+            )
+        except UserAlreadyExistsException as e:
+            return JSONResponse(
+                content={'message': str(e)},
+                status_code=400
+            )
 
 @router.delete("/{username}", tags=["users"])
 async def del_user(username: str):

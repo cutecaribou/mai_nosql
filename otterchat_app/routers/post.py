@@ -24,12 +24,23 @@ post_storage = PostStorage('mongodb://localhost:27017')
 async def read_posts():
     return await post_storage.get_all_posts()
 
+@router.get("/self", tags=["posts"])
+async def read_posts(username: Annotated[str | None, Cookie()]):
+    if username:
+        return await post_storage.get_posts_by_user(username)
+    else:
+        return Response(status_code=401)
+
+@router.get("/{username}", tags=["posts"])
+async def read_posts(username: str):
+    return await post_storage.get_posts_by_user(username)
+
 @router.post("/", tags=["posts"])
 async def new_post(data: IncomingPostModel, username: Annotated[str | None, Cookie()] = None):
     # return [{"username": "Rick"}, {"username": "Morty"}]
     if username:
         res = await post_storage.send_post(username, data.text)
-        return  {'status': res}
+        return {'status': res}
     else:
         return Response(status_code=401)
 #
