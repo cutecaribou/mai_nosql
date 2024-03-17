@@ -38,6 +38,7 @@ def login(username: str):
         return Response(status_code=404)
     # return {"message": "Come to the dark side, we have cookies"}
 
+@router.get("",  tags=["users"])
 @router.get("/", tags=["users"])
 async def read_all_users():
     # return [{"username": "Rick"}, {"username": "Morty"}]

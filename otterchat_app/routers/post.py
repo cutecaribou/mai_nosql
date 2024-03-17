@@ -25,6 +25,7 @@ if mongo_user and mongo_password:
 else:
     post_storage = PostStorage(f'mongodb://{mongo_host}:{mongo_port}')
 
+@router.get("",  tags=["posts"])
 @router.get("/", tags=["posts"])
 async def read_all_posts():
     return await post_storage.get_all_posts()
