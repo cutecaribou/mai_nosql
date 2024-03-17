@@ -1,3 +1,5 @@
+import os
+
 from fastapi.responses import JSONResponse
 from fastapi.responses import Response
 from fastapi     import APIRouter
@@ -15,7 +17,15 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-user_storage = UserStorage('mongodb://localhost:27017')
+user     = os.environ.get('MONGO_USER'    )
+password = os.environ.get('MONGO_PASSWORD')
+host     = os.environ.get('MONGO_HOST'    , 'localhost')
+port     = os.environ.get('MONGO_PORT'    , '27017')
+
+if user and password:
+    user_storage = UserStorage(f'mongodb://{user}:{password}@{host}:{port}')
+else:
+    user_storage = UserStorage(f'mongodb://{host}:{port}')
 
 @router.post("/login/{username}")
 def login(username: str):

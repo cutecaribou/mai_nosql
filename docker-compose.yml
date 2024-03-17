@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root-password
+    networks:
+      - proxynet
+
+  otterchat_app:
+    image: otterchat_app
+    ports:
+      - "8000:8000"
+    networks:
+      - proxynet
+    depends_on:
+      - mongodb
+
+networks:
+  proxynet:
+    name: custom_network

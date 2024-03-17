@@ -6,6 +6,7 @@ from models.post import PostModel
 from models.post import IncomingPostModel
 from typing      import Annotated
 from fastapi     import Cookie
+import os
 
 
 router = APIRouter(
@@ -14,8 +15,15 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+user     = os.environ.get('MONGO_USER'    )
+password = os.environ.get('MONGO_PASSWORD')
+host     = os.environ.get('MONGO_HOST'    , 'localhost')
+port     = os.environ.get('MONGO_PORT'    , '27017')
 
-post_storage = PostStorage('mongodb://localhost:27017')
+if user and password:
+    post_storage = PostStorage(f'mongodb://{user}:{password}@{host}:{port}')
+else:
+    post_storage = PostStorage(f'mongodb://{host}:{port}')
 
 @router.get("/", tags=["posts"])
 async def read_all_posts():
