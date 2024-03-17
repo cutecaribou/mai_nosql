@@ -9,15 +9,24 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: root-password
     networks:
       - proxynet
+    volumes:
+      - ~/volume_db:/data/db:rw
+      - ~/volume_configdb:/data/configdb:rw
 
   otterchat_app:
     image: otterchat_app
     ports:
       - "8000:8000"
+    environment:
+      MONGO_USER: root
+      MONGO_PASS: root-password
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
     networks:
       - proxynet
     depends_on:
       - mongodb
+
 
 networks:
   proxynet:

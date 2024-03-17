@@ -15,15 +15,15 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-user     = os.environ.get('MONGO_USER'    )
-password = os.environ.get('MONGO_PASSWORD')
-host     = os.environ.get('MONGO_HOST'    , 'localhost')
-port     = os.environ.get('MONGO_PORT'    , '27017')
+mongo_user     = os.environ.get('MONGO_USER')
+mongo_password = os.environ.get('MONGO_PASS')
+mongo_host     = os.environ.get('MONGO_HOST'    , 'localhost')
+mongo_port     = os.environ.get('MONGO_PORT'    , '27017')
 
-if user and password:
-    post_storage = PostStorage(f'mongodb://{user}:{password}@{host}:{port}')
+if mongo_user and mongo_password:
+    post_storage = PostStorage(f'mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}')
 else:
-    post_storage = PostStorage(f'mongodb://{host}:{port}')
+    post_storage = PostStorage(f'mongodb://{mongo_host}:{mongo_port}')
 
 @router.get("/", tags=["posts"])
 async def read_all_posts():
