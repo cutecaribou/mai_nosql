@@ -20,12 +20,11 @@ router = APIRouter(
 mongo_user     = os.environ.get('MONGO_USER')
 mongo_password = os.environ.get('MONGO_PASS')
 mongo_host     = os.environ.get('MONGO_HOST'    , 'localhost')
-mongo_port     = os.environ.get('MONGO_PORT'    , '27017')
 
 if mongo_user and mongo_password:
-    user_storage = UserStorage(f'mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}')
+    user_storage = UserStorage(f'mongodb://{mongo_user}:{mongo_password}@{mongo_host}')
 else:
-    user_storage = UserStorage(f'mongodb://{mongo_host}:{mongo_port}')
+    user_storage = UserStorage(f'mongodb://{mongo_host}')
 
 @router.post("/login/{username}")
 def login(username: str):

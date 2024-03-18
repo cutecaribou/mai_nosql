@@ -1,31 +1,76 @@
-version: "3.9"
+x-mongodb-healthcheck: &mongodb-healthcheck
+  healthcheck:
+    test: echo 'db.runCommand("ping").ok' | mongosh 127.0.0.1:27017/test --quiet
+    interval: 5s
+    timeout: 10s
+    retries: 30
+    start_period: 40s
+
 services:
-  mongodb:
+  mongo_db_node_01:
     image: mongo
+    <<: [ *mongodb-healthcheck ]
+    volumes:
+      - ~/mongo_volumes/node_01/db:/data/db
+      - ~/mongo_volumes/node_01/dbconfig:/data/dbconfig
+    command: mongod --replSet docker-replicaset
     ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root-password
+      - 27017:27017
     networks:
       - proxynet
+
+  mongo_db_node_02:
+    image: mongo
+    <<: [ *mongodb-healthcheck ]
     volumes:
-      - ~/volume_db:/data/db:rw
-      - ~/volume_configdb:/data/configdb:rw
+      - ~/mongo_volumes/node_02/db:/data/db
+      - ~/mongo_volumes/node_02/dbconfig:/data/dbconfig
+    command: mongod --replSet docker-replicaset
+    ports:
+      - 27018:27017
+    networks:
+      - proxynet
+
+  mongo_db_node_03:
+    image: mongo
+    <<: [ *mongodb-healthcheck ]
+    volumes:
+      - ~/mongo_volumes/node_03/db:/data/db
+      - ~/mongo_volumes/node_03/dbconfig:/data/dbconfig
+    command: mongod --replSet docker-replicaset
+    ports:
+      - 27019:27017
+    networks:
+      - proxynet
+
+  mongo_cluster_init:
+    image: mongo
+    depends_on:
+      mongo_db_node_01:
+        condition: service_healthy
+      mongo_db_node_02:
+        condition: service_healthy
+      mongo_db_node_03:
+        condition: service_healthy
+    volumes:
+      - ./init-mongo.js:/scripts/init-mongo.js:ro
+    entrypoint: [ "mongosh", "--host", "mongo_db_node_01", "--file", "/scripts/init-mongo.js" ]
+    networks:
+      - proxynet
 
   otterchat_app:
     image: otterchat_app
 #    ports:
 #      - "8000:8000"
     environment:
-      MONGO_USER: root
-      MONGO_PASS: root-password
-      MONGO_HOST: mongodb
-      MONGO_PORT: 27017
+#      MONGO_USER: root
+#      MONGO_PASS: root-password
+      MONGO_HOST: mongo_db_node_01,mongo_db_node_02,mongo_db_node_03/?replicaSet=docker-replicaset
     networks:
       - proxynet
     depends_on:
-      - mongodb
+      mongo_cluster_init:
+        condition: service_completed_successfully
     build:
       context: .
       dockerfile: Dockerfile
